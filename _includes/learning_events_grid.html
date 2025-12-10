@@ -1,24 +1,40 @@
 <script>
   function fallbackImage(img) {
+    if (!img.src) return;
     var formats = ['jpg', 'png', 'jpeg', 'svg', 'webp'];
     var src = img.src;
-    // Extract extension, ignoring query parameters
-    var currentExt = src.substring(src.lastIndexOf('.') + 1).split('?')[0].toLowerCase();
+    var lastDotIndex = src.lastIndexOf('.');
+    
+    // 如果没有后缀名，或者是一个数据 URI，就不处理
+    if (lastDotIndex === -1 || src.indexOf('data:') === 0) return;
+    
+    // 提取当前后缀，忽略 URL 参数 (?version=...)
+    var currentExt = src.substring(lastDotIndex + 1).split('?')[0].toLowerCase();
     
     if (!img.dataset.tried) {
       img.dataset.tried = currentExt;
     }
     
     var tried = img.dataset.tried.split(',');
-    var nextFormat = formats.find(function(fmt) {
-      return tried.indexOf(fmt) === -1;
-    });
+    
+    // 查找下一个未尝试的格式 (兼容性更好的写法)
+    var nextFormat = null;
+    for (var i = 0; i < formats.length; i++) {
+      if (tried.indexOf(formats[i]) === -1) {
+        nextFormat = formats[i];
+        break;
+      }
+    }
     
     if (nextFormat) {
       img.dataset.tried += ',' + nextFormat;
-      var newSrc = src.substring(0, src.lastIndexOf('.')) + '.' + nextFormat;
+      // 构造新 URL
+      var newSrc = src.substring(0, lastDotIndex) + '.' + nextFormat;
+      // 如果原 URL 有参数（如 ?v=1），可以在这里补上，但为了简单起见通常不需要
       img.src = newSrc;
+      // console.log('Image load failed, retrying with:', nextFormat);
     } else {
+      // 所有格式都试过了，彻底失败
       img.onerror = null; 
       img.style.opacity = '0.5'; 
       img.alt = 'Image not found';
@@ -53,4 +69,3 @@
   </div>
   {% endfor %}
 </div>
-
