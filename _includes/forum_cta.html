@@ -1,0 +1,7 @@
+{% assign forum_slug = site.forum_slug | default: site.name | default: site.title | downcase | replace: ' ', '-' %}
+<div class="text-center mb-4">
+  <a href="https://forum.u4ria.org/c/{{ forum_slug }}/" target="_blank" class="btn btn-primary btn-lg">
+    Visit the Forum →
+  </a>
+</div>
+
